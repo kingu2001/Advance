@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Advance</string>
+    <string name = "add_activity">Add activity</string>
+    <string name = "update_activity">Update activity</string>
+</resources>
