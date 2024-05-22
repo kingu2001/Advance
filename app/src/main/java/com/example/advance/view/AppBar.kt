@@ -8,6 +8,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,8 +21,8 @@ import com.example.advance.R
 fun AppBarView(
     title: String, onBackNavClicked: () -> Unit = {}
 ) {
-    val navigationicon: (@Composable () -> Unit)? =
-        if(!title.contains("A D V A N C E")) {
+    val navigationicon: (@Composable () -> Unit) =
+        if (!title.contains("A D V A N C E")) {
             {
                 IconButton(onClick = { onBackNavClicked() }) {
                     Icon(
@@ -31,24 +32,32 @@ fun AppBarView(
                     )
                 }
             }
-        }
-    else{
-        null
+        } else {
+            {
+                IconButton(onClick = { onBackNavClicked() }) {
+                    Icon(
+                        imageVector = Icons.Filled.AccountCircle,
+                        tint = colorResource(id = R.color.green),
+                        contentDescription = null
+                    )
+                }
+
+            }
         }
 
 
-    TopAppBar(title = {
-        Text(
-            text = title,
-            color = colorResource(id = R.color.green),
-            modifier = Modifier
-                .padding(start = 120.dp)
-                .heightIn(max = 24.dp)
-        )
-    },
+    TopAppBar(
+        title = {
+            Text(
+                text = title,
+                color = colorResource(id = R.color.green),
+                modifier = Modifier
+                    .padding(start = 70.dp)
+                    .heightIn(max = 24.dp)
+            )
+        },
         elevation = 3.dp,
         backgroundColor = Color.Transparent,
         navigationIcon = navigationicon
-
     )
 }

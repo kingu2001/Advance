@@ -9,14 +9,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Scaffold
 import androidx.compose.material.rememberScaffoldState
-import androidx.compose.material3.Button
+import androidx.compose.material.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -25,17 +27,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.advance.R
-import com.example.advance.model.Activity
+import com.example.advance.model.activity.Activity
 import com.example.advance.viewModel.ActivityViewModel
 import kotlinx.coroutines.launch
 
@@ -45,6 +47,21 @@ fun Adjust(
     viewModel: ActivityViewModel,
     navController: NavController
 ) {
+    val snackMessage = remember {
+        mutableStateOf("")
+    }
+
+    val scope = rememberCoroutineScope()
+    val scaffoldState = rememberScaffoldState()
+    if (id != 0) {
+        val activity = viewModel.getActivityById(id).collectAsState(initial = Activity(0, "", ""))
+        viewModel.activityTitleState = activity.value.title
+        viewModel.activityDescriptionState = activity.value.description
+    } else {
+        viewModel.activityTitleState = ""
+        viewModel.activityDescriptionState = ""
+    }
+
     Scaffold(
         topBar = {
             AppBarView(
@@ -54,8 +71,9 @@ fun Adjust(
                 } else {
                     stringResource(id = R.string.add_activity)
                 }
-            ) {navController.navigateUp()}
-        },
+            ) { navController.navigateUp() }
+        }, scaffoldState = scaffoldState
+
     ) {
         Column(
             modifier = Modifier
@@ -78,15 +96,40 @@ fun Adjust(
                 onValueChanged = { viewModel.onActivityDescriptionChanged(it) }
             )
 
-            Button(onClick = {
-                if(viewModel.activityTitleState.isNotEmpty() && viewModel.activityDescriptionState.isNotEmpty()){
-                    /*TODO*/
-                }
-                else{
-                    /*TODO*/
+            Button(modifier = Modifier
+                .padding(10.dp)
+                .clip(CircleShape),
+                colors = ButtonDefaults.buttonColors(Color.Green),
+                onClick = {
+                    if (viewModel.activityTitleState.isNotEmpty() &&
+                        viewModel.activityDescriptionState.isNotEmpty()
+                    ) {
+                        if (id != 0) {
+                            viewModel.updateActivity(
+                                Activity(
+                                    id = id,
+                                    title = viewModel.activityTitleState.trim(),
+                                    description = viewModel.activityDescriptionState.trim()
+                                )
+                            )
+                        } else {
+                            viewModel.addActivity(
+                                Activity(
+                                    title = viewModel.activityTitleState.trim(),
+                                    description = viewModel.activityDescriptionState.trim()
+                                )
+                            )
+                            snackMessage.value = "Activity has been created!"
+                        }
+                    } else {
+                        snackMessage.value = "Enter fields to create an activity."
+                    }
+                    scope.launch {
+                        scaffoldState.snackbarHostState.showSnackbar(snackMessage.value)
+                        navController.navigateUp()
+                    }
 
-                }
-            }) {
+                }) {
                 Text(
                     text =
                     if (id != 0) {
@@ -94,7 +137,8 @@ fun Adjust(
                     } else {
                         stringResource(id = R.string.add_activity)
                     },
-                    style = TextStyle(fontSize = 18.sp)
+                    style = TextStyle(fontSize = 18.sp),
+                    color = Color.White
                 )
             }
         }
